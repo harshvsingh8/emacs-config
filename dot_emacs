@@ -1,0 +1,99 @@
+;; Package installation - MELPA
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(package-initialize)
+
+(require 'use-package)
+
+(use-package helm
+  :bind (("M-x" . helm-M-x)
+         ("M-<f5>" . helm-find-files)
+         ([f10] . helm-buffers-list)
+         ([S-f10] . helm-recentf)))
+
+(use-package ace-jump-mode
+  :commands ace-jump-mode
+  :init
+  (bind-key "C-." 'ace-jump-mode))
+
+(use-package python
+  :mode ("\\.py\\'" . python-mode)
+  :interpreter ("python" . python-mode))
+
+(use-package hydra)
+
+(use-package ivy)
+
+(use-package ivy-hydra
+  :after (ivy hydra))
+
+(use-package company)
+
+(use-package hi-lock
+  :bind (("M-o l" . highlight-lines-matching-regexp)
+         ("M-o r" . highlight-regexp)
+         ("M-o w" . highlight-phrase)))
+
+(use-package iedit)
+
+(use-package wgrep)
+
+(use-package go-mode)
+
+(use-package magit)
+
+(use-package powerline
+  :init
+  (powerline-default-theme))
+
+;; check more configuration at https://github.com/jacktasia/dumb-jump
+(use-package dumb-jump
+  :bind (("M-g o" . dumb-jump-go-other-window)
+         ("M-g j" . dumb-jump-go)
+         ("M-g i" . dumb-jump-go-prompt)
+         ("M-g x" . dumb-jump-go-prefer-external)
+         ("M-g z" . dumb-jump-go-prefer-external-other-window))
+  :config (setq dumb-jump-selector 'helm) ;; (setq dumb-jump-selector 'ivy)
+  :ensure)
+
+(defhydra dumb-jump-hydra (:color blue :columns 3)
+    "Dumb Jump"
+    ("j" dumb-jump-go "Go")
+    ("o" dumb-jump-go-other-window "Other window")
+    ("e" dumb-jump-go-prefer-external "Go external")
+    ("x" dumb-jump-go-prefer-external-other-window "Go external other window")
+    ("i" dumb-jump-go-prompt "Prompt")
+    ("l" dumb-jump-quick-look "Quick look")
+    ("b" dumb-jump-back "Back"))
+
+(use-package find-file-in-project)
+
+;; Needs emacs 25+
+;; (use-package magithub
+;;   :after magit
+;;   :config
+;;   (magithub-feature-autoinject t)
+;;   (setq magithub-clone-default-directory "~/github"))
+
+;; CUSTOMIZATION (without use-packages)
+(defhydra hydra-zoom (global-map "<f2>")
+  "zoom"
+  ("g" text-scale-increase "in")
+  ("l" text-scale-decrease "out"))
+
+;; TODO Define hydra for moving windows
+;; https://www.emacswiki.org/emacs/WindMove
+
+;; Reload buffer
+(defun revert-buffer-no-confirm ()
+    "Revert buffer without confirmation."
+    (interactive)
+    (revert-buffer :ignore-auto :noconfirm))
+
+(setq make-backup-files nil) 
+(setq auto-save-default nil)
+
+;; Enable Company Mode
+(add-hook 'after-init-hook 'global-company-mode)
+
