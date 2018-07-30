@@ -41,7 +41,7 @@
 ;; (global-set-key (kbd "C-s") 'swiper)
 (global-set-key (kbd "C-c C-r") 'ivy-resume)
 (global-set-key (kbd "<f6>") 'ivy-resume)
-(global-set-key (kbd "M-x") 'counsel-M-x)
+;; (global-set-key (kbd "M-x") 'counsel-M-x)
 
 ;;(global-set-key (kbd "C-x C-f") 'counsel-find-file) 
 
@@ -381,6 +381,25 @@
   (next-line arg))
 
 (global-set-key (kbd "C-S-d") 'duplicate-line)
+
+;; IMAGE PASTE IN ORG MODE
+(defun my-org-screenshot ()
+  "Take a screenshot into a time stamped unique-named file in the
+same directory as the org-buffer and insert a link to this file."
+  (interactive)
+  (setq filename
+        (concat
+         (make-temp-name
+          (concat (buffer-file-name)
+                  "_"
+                  (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+  (call-process "pngpaste" nil nil nil filename)
+  (insert (concat "[[" filename "]]"))
+  (org-display-inline-images))
+
+(global-set-key (kbd "C-M-y") 'my-org-screenshot)
+
+
 
 ;; START THE SERVER
 (use-package edit-server
