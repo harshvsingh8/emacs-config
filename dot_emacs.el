@@ -41,7 +41,7 @@
 ;; (global-set-key (kbd "C-s") 'swiper)
 (global-set-key (kbd "C-c C-r") 'ivy-resume)
 (global-set-key (kbd "<f6>") 'ivy-resume)
-(global-set-key (kbd "M-x") 'counsel-M-x)
+;; (global-set-key (kbd "M-x") 'counsel-M-x)
 
 ;;(global-set-key (kbd "C-x C-f") 'counsel-find-file) 
 
@@ -146,8 +146,13 @@
          ("M-g z" . dumb-jump-go-prefer-external-other-window))
   :config (setq dumb-jump-selector 'helm))
 
-;; (setq dumb-jump-selector 'ivy))
-
+;; GTAGS
+(use-package ggtags
+  :ensure t
+  :hook ((c-mode-hook . ggtags-mode)
+	 (c++-mode-hook . ggtags-mode)
+	 (java-mode-hook . ggtags-mode)))
+	 
 (defhydra dumb-jump-hydra (:color blue :columns 3)
     "Dumb Jump"
     ("j" dumb-jump-go "Go")
@@ -285,16 +290,6 @@
        '((sequence "TODO(t)" "STARTED(s!)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@/!)")))
 
 (setq org-tag-alist '(("harshvs" . ?h)
-		      ("shaswast" . ?s)
-		      ("kagarg" . ?k)
-		      ("ravaror" . ?r)
-		      ("sabg" . ?g)
-		      ("mougupta" . ?m)
-		      ("disriva" . ?d)
-		      ("rakhatta" . ?k)
-		      ("vikuma" . ?v)
-		      ("anubhavm" . ?a)
-		      ("hvst" . ?t)
 		      ("bug" . ?b)
 		      ("crash" . ?c)
 		      ("investigate" . ?i)
@@ -378,6 +373,7 @@
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SMARTJUMP
 (use-package smartscan
@@ -386,6 +382,62 @@
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Duplicate lines
+(defun duplicate-line (arg)
+  "Duplicate current line, leaving point in lower line."
+  (interactive "*p")
+
+  ;; save the point for undo
+  (setq buffer-undo-list (cons (point) buffer-undo-list))
+
+  ;; local variables for start and end of line
+  (let ((bol (save-excursion (beginning-of-line) (point)))
+        eol)
+    (save-excursion
+
+      ;; don't use forward-line for this, because you would have
+      ;; to check whether you are at the end of the buffer
+      (end-of-line)
+      (setq eol (point))
+
+      ;; store the line and disable the recording of undo information
+      (let ((line (buffer-substring bol eol))
+            (buffer-undo-list t)
+            (count arg))
+        ;; insert the line arg times
+        (while (> count 0)
+          (newline)         ;; because there is no newline in 'line'
+          (insert line)
+          (setq count (1- count)))
+        )
+
+      ;; create the undo information
+      (setq buffer-undo-list (cons (cons eol (point)) buffer-undo-list)))
+    ) ; end-of-let
+
+  ;; put the point in the lowest line and return
+  (next-line arg))
+
+(global-set-key (kbd "C-S-d") 'duplicate-line)
+
+;; IMAGE PASTE IN ORG MODE
+(defun my-org-screenshot ()
+  "Take a screenshot into a time stamped unique-named file in the
+   same directory as the org-buffer and insert a link to this file."
+  (interactive)
+  (setq filename
+        (concat
+         (make-temp-name
+          (concat (buffer-file-name)
+                  "_"
+                  (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+  (call-process "pngpaste" nil nil nil filename)
+  (insert (concat "[[" filename "]]"))
+  (org-display-inline-images))
+
+(global-set-key (kbd "C-M-y") 'my-org-screenshot)
+
 
 ;; START THE SERVER
 (use-package edit-server
