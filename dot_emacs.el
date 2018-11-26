@@ -1,11 +1,11 @@
 ;; Package installation - MELPA
-(require 'package)
+;; (require 'package)
 
-(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-                    (not (gnutls-available-p))))
-       (url (concat (if no-ssl "http" "http") "://melpa.org/packages/")))
-  (add-to-list 'package-archives (cons "melpa" url) t))
-(package-initialize) ;; You might already have this line
+;; (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+;;                     (not (gnutls-available-p))))
+;;        (url (concat (if no-ssl "http" "http") "://melpa.org/packages/")))
+;;   (add-to-list 'package-archives (cons "melpa" url) t))
+;; (package-initialize) ;; You might already have this line
 
 (require 'use-package)
 
@@ -95,6 +95,46 @@
   :ensure t
   :init
   (powerline-default-theme))
+
+;; PYTHON SETUP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package jedi
+  :ensure t)
+(add-hook 'python-mode-hook 'jedi:setup)
+(setq jedi:complete-on-dot t)
+
+;; Configure flymake for Python
+(when (load "flymake" t)
+  (defun flymake-pylint-init ()
+    (let* ((temp-file (flymake-init-create-temp-buffer-copy
+                       'flymake-create-temp-inplace))
+           (local-file (file-relative-name
+                        temp-file
+                        (file-name-directory buffer-file-name))))
+      (list "epylint" (list local-file))))
+  (add-to-list 'flymake-allowed-file-name-masks
+               '("\\.py\\'" flymake-pylint-init)))
+
+;; Set as a minor mode for Python
+(add-hook 'python-mode-hook '(lambda () (flymake-mode)))
+
+;; Configure to wait a bit longer after edits before starting
+(setq-default flymake-no-changes-timeout '2)
+
+;; To avoid having to mouse hover for the error message, these functions make flymake error messages
+;; appear in the minibuffer
+(defun show-fly-err-at-point ()
+  "If the cursor is sitting on a flymake error, display the message in the minibuffer"
+  (require 'cl)
+  (interactive)
+  (let ((line-no (line-number-at-pos)))
+    (dolist (elem flymake-err-info)
+      (if (eq (car elem) line-no)
+      (let ((err (car (second elem))))
+        (message "%s" (flymake-ler-text err)))))))
+
+(add-hook 'post-command-hook 'show-fly-err-at-point)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; check more configuration at https://github.com/jacktasia/dumb-jump
 (use-package dumb-jump
@@ -284,7 +324,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SAVE BUFFER
-(w32-register-hot-key [snapshot])
+;; (w32-register-hot-key [snapshot])
 (global-set-key [snapshot] 'save-buffer)
 (global-set-key (kbd "<print>") 'save-buffer)
 
@@ -337,6 +377,15 @@
 ;; configure jsx-tide checker to run after your default jsx checker
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SMARTJUMP
+(use-package smartscan
+  :ensure t
+  :load-path "~/github/emacs-config/local_packages"
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; START THE SERVER
 (use-package edit-server
