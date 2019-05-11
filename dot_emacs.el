@@ -1,19 +1,47 @@
-;; Package installation - MELPA
-;; (require 'package)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(package-selected-packages
+   (quote
+    (edit-server smartscan web-mode tide ggtags jedi powerline magit go-mode wgrep iedit company counsel ivy-hydra hydra ivy ace-jump-mode use-package)))
+ '(scroll-bar-mode nil)
+ '(show-paren-mode t)
+ '(tool-bar-mode nil)
+ '(tooltip-mode nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 
-;; (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-;;                     (not (gnutls-available-p))))
-;;        (url (concat (if no-ssl "http" "http") "://melpa.org/packages/")))
-;;   (add-to-list 'package-archives (cons "melpa" url) t))
-;; (package-initialize) ;; You might already have this line
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; INIT SECTION - package path and use-package setup
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'use-package)
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
 
-;; (use-package helm
-;;   :bind (("M-x" . helm-M-x)
-;;          ("M-<f5>" . helm-find-files)
-;;          ([f10] . helm-buffers-list)
-;;          ([S-f10] . helm-recentf)))
+(add-to-list 'load-path "~/github/emacs-config/local_packages")
+
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CUSTOM PACKAGE CONFIG
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package ace-jump-mode
   :ensure t
@@ -26,48 +54,43 @@
   :mode ("\\.py\\'" . python-mode)
   :interpreter ("python" . python-mode))
 
+(use-package ivy
+  :ensure t)
+
 (use-package hydra
   :ensure t)
 
-(use-package ivy
-  :ensure t)
+(use-package ivy-hydra
+  :ensure t
+  :after (ivy hydra))
+
+(setq ivy-use-virtual-buffers t)
+(ivy-mode 1)
+(global-set-key (kbd "C-c C-r") 'ivy-resume)
+(global-set-key (kbd "<f6>") 'ivy-resume)
 
 (use-package counsel
   :ensure t)
 
-(setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
 
 ;; (global-set-key (kbd "C-s") 'swiper)
-(global-set-key (kbd "C-c C-r") 'ivy-resume)
-(global-set-key (kbd "<f6>") 'ivy-resume)
+
 ;; (global-set-key (kbd "M-x") 'counsel-M-x)
-
-;;(global-set-key (kbd "C-x C-f") 'counsel-find-file) 
-
-(global-set-key (kbd "<f1> f") 'counsel-describe-function)
-(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-(global-set-key (kbd "<f1> l") 'counsel-find-library)
-(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-
-(global-set-key (kbd "M-1") 'counsel-git)
-(global-set-key (kbd "M-2") 'counsel-ag)
-
+;; (global-set-key (kbd "C-x C-f") 'counsel-find-file) 
+;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+;; (global-set-key (kbd "<f1> l") 'counsel-find-library)
+;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+;; (global-set-key (kbd "M-1") 'counsel-git)
+;; (global-set-key (kbd "M-2") 'counsel-ag)
 ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
 ;; (global-set-key (kbd "C-c k") 'counsel-ag)
 ;; (global-set-key (kbd "C-x l") 'counsel-locate) 
 ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
 
 (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
-(ivy-mode 1)
-
-;; (use-package zenburn-theme
-;;   :ensure t)
-
-(use-package ivy-hydra
-  :ensure t
-  :after (ivy hydra))
 
 (use-package company
     :ensure t)
@@ -122,29 +145,34 @@
 
 ;; To avoid having to mouse hover for the error message, these functions make flymake error messages
 ;; appear in the minibuffer
-(defun show-fly-err-at-point ()
-  "If the cursor is sitting on a flymake error, display the message in the minibuffer"
-  (require 'cl)
-  (interactive)
-  (let ((line-no (line-number-at-pos)))
-    (dolist (elem flymake-err-info)
-      (if (eq (car elem) line-no)
-      (let ((err (car (second elem))))
-        (message "%s" (flymake-ler-text err)))))))
+;; (defun show-fly-err-at-point ()
+;;   "If the cursor is sitting on a flymake error, display the message in the minibuffer"
+;;   (require 'cl)
+;;   (interactive)
+;;   (let ((line-no (line-number-at-pos)))
+;;     (dolist (elem flymake-err-info)
+;;       (if (eq (car elem) line-no)
+;;       (let ((err (car (second elem))))
+;;         (message "%s" (flymake-ler-text err)))))))
+;; For version 26.1+
+(defun elpy-flymake-error-at-point ()
+  "Return the flymake error at point, or nil if there is none."
+  (mapconcat #'flymake-diagnostic-text (flymake-diagnostics (point)) "\n"))
 
-(add-hook 'post-command-hook 'show-fly-err-at-point)
+;; (add-hook 'post-command-hook 'show-fly-err-at-point)
+(add-hook 'post-command-hook 'elpy-flymake-error-at-point)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; check more configuration at https://github.com/jacktasia/dumb-jump
-(use-package dumb-jump
-  :ensure t
-  :bind (("M-g o" . dumb-jump-go-other-window)
-         ("M-g j" . dumb-jump-go)
-         ("M-g i" . dumb-jump-go-prompt)
-         ("M-g x" . dumb-jump-go-prefer-external)
-         ("M-g z" . dumb-jump-go-prefer-external-other-window))
-  :config (setq dumb-jump-selector 'helm))
+;; (use-package dumb-jump
+;;   :ensure t
+;;   :bind (("M-g o" . dumb-jump-go-other-window)
+;;          ("M-g j" . dumb-jump-go)
+;;          ("M-g i" . dumb-jump-go-prompt)
+;;          ("M-g x" . dumb-jump-go-prefer-external)
+;;          ("M-g z" . dumb-jump-go-prefer-external-other-window))
+;;   :config (setq dumb-jump-selector 'helm))
 
 ;; GTAGS
 (use-package ggtags
@@ -191,8 +219,6 @@
 
 (global-set-key (kbd "<f5>") 'revert-buffer-no-confirm)
 
-(setq make-backup-files nil) 
-(setq auto-save-default nil)
 
 ;; Enable Company Mode
 (add-hook 'after-init-hook 'global-company-mode)
@@ -216,6 +242,9 @@
 (setq auto-save-list-file-name  nil) ; Don't want any .saves files 
 (setq auto-save-default         nil) ; Don't want any auto saving 
 (setq ring-bell-function (lambda nil nil))
+(setq make-backup-files nil) 
+(setq auto-save-default nil)
+
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -247,8 +276,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; HTMLIZE
-(use-package htmlize
-  :ensure t)
+;; (use-package htmlize
+;;   :ensure t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVE LINE UP OR DOWN
@@ -280,11 +309,11 @@
 ;; (add-to-list 'ac-modes 'org-mode)
 
 (global-set-key (kbd "C-c o") 
-                (lambda () (interactive) (find-file "c:/users/harshvs/dropbox/notes/organizer.org")))
+                (lambda () (interactive) (find-file "~/Dropbox/notes/organizer.org")))
 
-(setq org-default-notes-file "c:/users/harshvs/dropbox/notes/organizer.org")
+(setq org-default-notes-file "~/Dropbox/notes/notes.org")
 
-(global-set-key [f10] 'org-capture)
+(global-set-key [f12] 'org-capture)
 
 (setq org-todo-keywords
        '((sequence "TODO(t)" "STARTED(s!)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@/!)")))
@@ -311,17 +340,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; KILL BUFFER - QUICKY
-(global-set-key [pause] 'kill-this-buffer)
+;; (global-set-key [pause] 'kill-this-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; READ ONLY MODE
-(global-set-key [scroll] 'read-only-mode)
+;; READ ONLY MODE -> C-xr
+;; (global-set-key [scroll] 'read-only-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SAVE BUFFER
 ;; (w32-register-hot-key [snapshot])
 (global-set-key [snapshot] 'save-buffer)
 (global-set-key (kbd "<print>") 'save-buffer)
+(global-set-key [f13] 'save-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; RECENTF 
@@ -443,10 +473,11 @@
 (use-package edit-server
   :ensure t)
 
-(when (and (>= emacs-major-version 23)
-           (equal window-system 'w32))
-  (defun server-ensure-safe-dir (dir) "Noop" t)) ; Suppress error "directory
-                                                 ; ~/.emacs.d/server is unsafe"
-                                                 ; on windows.
+;; (when (and (>= emacs-major-version 23)
+;;            (equal window-system 'w32))
+;;   (defun server-ensure-safe-dir (dir) "Noop" t)) ; Suppress error "directory
+;;                                                  ; ~/.emacs.d/server is unsafe"
+;;                                                  ; on windows.
+
 (edit-server-start)
 (server-start)
