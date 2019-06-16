@@ -6,7 +6,7 @@
  '(column-number-mode t)
  '(package-selected-packages
    (quote
-    (edit-server smartscan web-mode tide ggtags jedi powerline magit go-mode wgrep iedit company counsel ivy-hydra hydra ivy ace-jump-mode use-package)))
+    (ein racket-mode auto-highlight-symbol auto-highight-symbol clang-format find-file-in-repository edit-server smartscan web-mode tide ggtags jedi powerline magit go-mode wgrep iedit company counsel ivy-hydra hydra ivy ace-jump-mode use-package)))
  '(scroll-bar-mode nil)
  '(show-paren-mode t)
  '(tool-bar-mode nil)
@@ -119,6 +119,23 @@
   :init
   (powerline-default-theme))
 
+(use-package ag
+    :ensure t)
+
+(use-package auto-highlight-symbol
+  :ensure t
+  :init
+  (global-auto-highlight-symbol-mode t))
+
+(use-package racket-mode
+  :ensure t
+  :mode ("\\.scm\\'" . racket-mode)
+  )
+
+(use-package ein
+  :ensure t)
+
+
 ;; PYTHON SETUP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package jedi
   :ensure t)
@@ -181,19 +198,19 @@
 	 (c++-mode-hook . ggtags-mode)
 	 (java-mode-hook . ggtags-mode)))
 	 
-(defhydra dumb-jump-hydra (:color blue :columns 3)
-    "Dumb Jump"
-    ("j" dumb-jump-go "Go")
-    ("o" dumb-jump-go-other-window "Other window")
-    ("e" dumb-jump-go-prefer-external "Go external")
-    ("x" dumb-jump-go-prefer-external-other-window "Go external other window")
-    ("i" dumb-jump-go-prompt "Prompt")
-    ("l" dumb-jump-quick-look "Quick look")
-    ("b" dumb-jump-back "Back"))
+;; (defhydra dumb-jump-hydra (:color blue :columns 3)
+;;     "Dumb Jump"
+;;     ("j" dumb-jump-go "Go")
+;;     ("o" dumb-jump-go-other-window "Other window")
+;;     ("e" dumb-jump-go-prefer-external "Go external")
+;;     ("x" dumb-jump-go-prefer-external-other-window "Go external other window")
+;;     ("i" dumb-jump-go-prompt "Prompt")
+;;     ("l" dumb-jump-quick-look "Quick look")
+;;     ("b" dumb-jump-back "Back"))
 
-;; (use-package find-file-in-repository
-;;   :ensure t
-;;   :bind(("C-x C-f" . find-file-in-repository)))
+(use-package find-file-in-repository
+  :ensure t
+  :bind(("M-1" . find-file-in-repository)))
 
 ;; Needs emacs 25+
 ;; (use-package magithub
@@ -340,11 +357,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; KILL BUFFER - QUICKY
-;; (global-set-key [pause] 'kill-this-buffer)
+(global-set-key [pause] 'kill-this-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; READ ONLY MODE -> C-xr
-;; (global-set-key [scroll] 'read-only-mode)
+(global-set-key [scroll] 'read-only-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SAVE BUFFER
@@ -481,3 +498,4 @@
 
 (edit-server-start)
 (server-start)
+
